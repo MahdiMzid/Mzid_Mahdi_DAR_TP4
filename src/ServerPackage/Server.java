@@ -2,6 +2,8 @@ package ServerPackage;
 
 import java.io.*;
 import java.net.*;
+import java.util.Date;
+import java.text.SimpleDateFormat;
 
 
 
@@ -14,11 +16,12 @@ public class Server extends Thread{
 	}
 	public void run() {
 		try {
-			ServerSocket ss = new ServerSocket(1234);
+
 			System.out.println("Démarrage du Server");
+			DatagramSocket serverSocket = new DatagramSocket(1234);
 			while(true) {
-				Socket s = ss.accept();
-				new ClientProcess(s, ++ord).start();
+				new ClientProcess(serverSocket, ++ord).start();
+
 			}
 
 		} catch (IOException e) {
@@ -26,36 +29,31 @@ public class Server extends Thread{
 		}
 	}
 	public class ClientProcess extends Thread {
-		Socket socket;
+		DatagramSocket socket;
 		private int numClient;
-		public ClientProcess(Socket socket,int numClient) {
+		public ClientProcess(DatagramSocket serverSocket,int numClient) {
 			super();
-			this.socket = socket;
+			this.socket = serverSocket;
 			this.numClient = numClient; 
 		}
 		public void run() {
 			try {
 
-				DatagramSocket serverSocket = new DatagramSocket(1234);
+
 	            byte[] receiveData = new byte[1024];
-				System.out.println("Le serveur est prêt à recevoir des connexions...");
 				          
 				DatagramPacket receivePacket = new DatagramPacket(receiveData, receiveData.length);
-                serverSocket.receive(receivePacket);
+                socket.receive(receivePacket);
 
-                String clientMessage = new String(receivePacket.getData(), 0, receivePacket.getLength());
-                InetAddress clientAddress = receivePacket.getAddress();
-                int clientPort = receivePacket.getPort();
+                SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+                String currentTime = dateFormat.format(new Date());
 
-                String response = "Bienvenue " + clientMessage;
-                byte[] sendData = response.getBytes();
+                byte[] sendData = currentTime.getBytes();
 
-                DatagramPacket sendPacket = new DatagramPacket(sendData, sendData.length, clientAddress, clientPort);
-                serverSocket.send(sendPacket);
+                DatagramPacket sendPacket = new DatagramPacket(sendData, sendData.length, receivePacket.getAddress(), receivePacket.getPort());
+                socket.send(sendPacket);
 
-                System.out.println("Message reçu: " + clientMessage);
-                System.out.println("Client connecté depuis " + clientAddress.getHostAddress() + ":" + clientPort);
-				serverSocket.close();
+				socket.close();
 			} catch (IOException  e) {
 				e.printStackTrace();
 			}

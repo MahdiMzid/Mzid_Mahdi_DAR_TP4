@@ -12,8 +12,8 @@ public class Client {
             InetAddress serverAddress = InetAddress.getByName("localhost");
         	System.out.println("Je suis un client conncté");
 
-            String message = "Mahdi Mzid";
-            byte[] sendData = message.getBytes();
+            String request = "Demande de date ";
+            byte[] sendData = request.getBytes();
 
             DatagramPacket sendPacket = new DatagramPacket(sendData, sendData.length, serverAddress, 1234);
             clientSocket.send(sendPacket);
@@ -24,8 +24,7 @@ public class Client {
 
             String response = new String(receivePacket.getData(), 0, receivePacket.getLength());
 
-            System.out.println("Réponse du serveur: " + response);
-            System.out.println("Adresse et port du serveur: " + receivePacket.getAddress().getHostAddress() + ":" + receivePacket.getPort());
+            System.out.println("Date et heure fournies par le serveur: " + response);
             clientSocket.close();
         } catch (IOException e) {
             e.printStackTrace();
